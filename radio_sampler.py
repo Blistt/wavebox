@@ -1,3 +1,12 @@
+'''
+This script is used to sample the radio at a specific frequency and save the output to a file
+The script should allow a user to:
+- specify the frequency
+- use that frequency to title the output audio file 
+- and specify the lenght of the recording in seconds
+'''
+
+
 from gnuradio import analog
 from gnuradio import audio
 from gnuradio import blocks
