@@ -1,0 +1,6 @@
+conda install python==3.7
+conda install numpy==1.16.5
+conda install tensorflow=1.14
+pip install librosa==0.7.0
+conda install numba==0.48.0
+conda isntall -c conda-forge resampy==0.2.2
