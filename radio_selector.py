@@ -3,10 +3,9 @@ This script is used to, given a query audio file, identify the most musically si
 in a database of audio files
 """
 
-
 from utils import random_sample
 import numpy as np
-from musicnn_.musicnn.extractor import extractor
+from musicnn.musicnn.extractor import extractor
 import pathlib
 from sklearn.neighbors import NearestNeighbors
 import librosa
@@ -43,7 +42,7 @@ if __name__ == '__main__':
     E = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(candidate_embeddings)
 
     # Load the query file and get its embedding
-    query_file = 'dev_dataset/test/vivaldi_summer.mp3'
+    query_file = 'dev_dataset/test/summer_vivaldi.mp3'
     query_sample_filename = f"{'/'.join(query_file.split('/')[:-1])}/samples/{query_file.split('/')[-1]}"
     query_sample = random_sample(query_file, 10)
     librosa.output.write_wav(query_sample_filename, query_sample, 22050)    # save the query sample using librosa
@@ -55,7 +54,7 @@ if __name__ == '__main__':
 
     # prints results: recommended song for the given qury song
     query_song = query_file.split('/')[-1].split('.')[0]
-    recommended_song = songs[indices[0][0]].name
+    recommended_song = songs[indices[0][0]].name.split('.')[0]
     print('\n', '---------------------------------------------------------------------------------------------')
     print(f"Query song: {query_song}")
     print(f"Recommended song: {recommended_song}", '\n')
