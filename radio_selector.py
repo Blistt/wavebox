@@ -11,13 +11,21 @@ from sklearn.neighbors import NearestNeighbors
 import librosa
 
 
-def get_musical_embedding(filename, model='MTT_musicnn'):
+def get_musical_embedding(filename, model='MTT_musicnn', representation='taggram', temporally_averaged=True):
     # use the musicnn feature extractor to get the embeddings
     taggram, tags, features = extractor(filename, model=model, extract_features=True)
-    average_taggram = np.mean(taggram, axis=0)
-    return average_taggram
 
-def get_embeddings_from_dir(directory, model='MTT_musicnn'):
+    if representation == 'taggram':
+        representation = taggram
+    elif representation == 'features':
+        representation = features['penultimate']
+
+    if temporally_averaged:
+        representation = np.mean(representation, axis=0)
+
+    return representation
+
+def get_embeddings_from_dir(directory, model='MTT_musicnn', representation='taggram', temporally_averaged=True):
     embeddings = []
     songs = []
     for file in pathlib.Path(directory).iterdir():
@@ -25,15 +33,33 @@ def get_embeddings_from_dir(directory, model='MTT_musicnn'):
         # Load the audio file using librosa
         filename = str(file)
         print('getting embedding for', filename)
-        embedding = get_musical_embedding(filename, model=model)
+        embedding = get_musical_embedding(filename, model=model, representation=representation, 
+                                          temporally_averaged=temporally_averaged)
         embeddings.append(embedding)
     return embeddings, songs
 
 
 if __name__ == '__main__':
-    # Load candidate files and get their embeddings
+    # --------------------------------- Input parameters ---------------------------------
     candidates_dir = 'dev_dataset/train/samples'
-    candidate_embeddings, songs = get_embeddings_from_dir(candidates_dir)
+    model = 'MSD_musicnn'                   # 'MTT_musicnn' or 'MSD_musicnn' or 'MSD_musicnn_big'
+    representation = 'features'             # 'taggram' or 'features'
+    temporally_averaged = True
+
+    query_files = ['dev_dataset/test/summer_vivaldi.mp3', 
+                   'dev_dataset/test/children_nick-cave.mp3',
+                   'dev_dataset/test/lyrics-lie_dance-gavin-dance.mp3', 
+                   'dev_dataset/test/PEDRO_jaxomy-agatinoromero-raffaellacarra.mp3',
+                   'dev_dataset/test/stiches_bullet-for-my-valentine.mp3',
+                   'dev_dataset/test/summertime-sadness_lana-del-rey.mp3',
+                   'dev_dataset/test/sunny-day_yokomeshi.mp3',
+                   'dev_dataset/test/we-back_jason-aldean.mp3']
+    #--------------------------------------------------------------------------------------
+
+    # Load candidate files and get their embeddings
+    candidate_embeddings, songs = get_embeddings_from_dir(candidates_dir, model=model, 
+                                                          representation=representation,
+                                                          temporally_averaged=temporally_averaged)
 
     # Fit a nearest neighbors model to candidate embeddings
     candidate_embeddings = np.array(candidate_embeddings)
@@ -42,21 +68,23 @@ if __name__ == '__main__':
     E = NearestNeighbors(n_neighbors=1, algorithm='ball_tree').fit(candidate_embeddings)
 
     # Load the query file and get its embedding
-    query_file = 'dev_dataset/test/summer_vivaldi.mp3'
-    query_sample_filename = f"{'/'.join(query_file.split('/')[:-1])}/samples/{query_file.split('/')[-1]}"
-    query_sample = random_sample(query_file, 10)
-    librosa.output.write_wav(query_sample_filename, query_sample, 22050)    # save the query sample using librosa
-    query_embedding = get_musical_embedding(query_sample_filename)
+    for query_file in query_files:
+        query_sample_filename = f"{'/'.join(query_file.split('/')[:-1])}/samples/{query_file.split('/')[-1]}"
+        query_sample = random_sample(query_file, 10)
+        librosa.output.write_wav(query_sample_filename, query_sample, 22050)    # save the query sample using librosa
+        query_embedding = get_musical_embedding(query_sample_filename, model=model, 
+                                                representation=representation, 
+                                                temporally_averaged=temporally_averaged)
 
-    # Find the nearest neighbor
-    query_embedding = query_embedding.reshape(1, -1)
-    distances, indices = E.kneighbors(query_embedding)
+        # Find the nearest neighbor
+        query_embedding = query_embedding.reshape(1, -1)
+        distances, indices = E.kneighbors(query_embedding)
 
-    # prints results: recommended song for the given qury song
-    query_song = query_file.split('/')[-1].split('.')[0]
-    recommended_song = songs[indices[0][0]].name.split('.')[0]
-    print('\n', '---------------------------------------------------------------------------------------------')
-    print(f"Query song: {query_song}")
-    print(f"Recommended song: {recommended_song}", '\n')
+        # prints results: recommended song for the given qury song
+        query_song = query_file.split('/')[-1].split('.')[0]
+        recommended_song = songs[indices[0][0]].name.split('.')[0]
+        print('\n', '---------------------------------------------------------------------------------------------')
+        print(f"Query song: {query_song}")
+        print(f"Recommended song: {recommended_song}", '\n')
 
 
