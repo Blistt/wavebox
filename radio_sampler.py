@@ -6,16 +6,20 @@ import matplotlib.pyplot as plt
 from rtlsdr import RtlSdr
 from scipy import signal
 import numpy as np
+import os
 from scipy.io import wavfile
+from pydub import AudioSegment
 import sounddevice
 
 sdr = RtlSdr()
 
 # Configure Device
-Freq = 91.7e6  # frequency in Hz (e.g., 91.7 MHz)
-Fs = 1140000  # sampling rate
-F_offset = 250000  # frequency offset
-Fc = Freq - F_offset  # center frequency
+Freq = 91.7  # Frequency in MHz
+Freq = Freq * 1e6 # Convert to Hz
+# Freqs = []  # List of frequencies
+Fs = 1140000  # Sampling Rate
+F_offset = 250000  # Frequency Offset
+Fc = Freq - F_offset  # Center Frequency
 
 # Configure the rtlsdr device with the specified sampling rate, 
 # center frequency, and gain mode.
@@ -24,7 +28,7 @@ sdr.center_freq = Fc
 sdr.gain = 'auto'
 
 # Max number of samples
-samples = sdr.read_samples(5700000)
+samples = sdr.read_samples(8192000)
 
 # Convert samples into NumPy array
 x1 = np.array(samples).astype("complex64")
@@ -49,13 +53,14 @@ lpf = signal.remez(n_taps, [0, bandwidth, bandwidth+(Fs/2-bandwidth)/4, Fs/2], [
 
 # Apply LPF to frequency corrected signal (x2)
 x3 = signal.lfilter(lpf, 1.0, x2) 
+
 # Calculate decimation rate
 dec_rate = int(Fs / bandwidth)
 
 x4 = x3[0::dec_rate] # Downsample x3 by a factor of dec_rate using slicing
 Fs_y = Fs/dec_rate # Sampling rate reduced
 
-# Calculating the ohase difference between x4 samples 
+# Calculating the phase difference between x4 samples 
 y5 = x4[1:] * np.conj(x4[:-1])
 x5 = np.angle(y5)
 
@@ -77,3 +82,14 @@ x7 *= 10000 / np.max(np.abs(x7))
 
 # Write audio to a WAV file to hear playback
 wavfile.write('wav.wav',int(Fs_audio), x7.astype("int16"))
+
+# Load wav file into AudioSegment object
+wav_audio = AudioSegment.from_wav("wav.wav")
+#raw_audio = AudioSegment.from_file("audio.wav", format="raw", frame_rate=44100, channels=2, sample_width=2)
+
+# Export the audio to MP3 format
+wav_audio.export(f"{Freq}.mp3", format="mp3")
+#raw_audio.export("audio2.mp3", format="mp3")
+
+# Removes the WAV file after exporting it to MP3 format
+os.remove('C:\\Users\\offda\\OneDrive\\Desktop\\radiovenv\\envs\\wav.wav')
