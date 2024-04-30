@@ -46,14 +46,7 @@ if __name__ == '__main__':
     representation = 'features'             # 'taggram' or 'features'
     temporally_averaged = True
 
-    query_files = ['dev_dataset/test/summer_vivaldi.mp3', 
-                   'dev_dataset/test/children_nick-cave.mp3',
-                   'dev_dataset/test/lyrics-lie_dance-gavin-dance.mp3', 
-                   'dev_dataset/test/PEDRO_jaxomy-agatinoromero-raffaellacarra.mp3',
-                   'dev_dataset/test/stiches_bullet-for-my-valentine.mp3',
-                   'dev_dataset/test/summertime-sadness_lana-del-rey.mp3',
-                   'dev_dataset/test/sunny-day_yokomeshi.mp3',
-                   'dev_dataset/test/we-back_jason-aldean.mp3']
+    query_files = ['dev_dataset/test/Slipknot - Wait And Bleed (Audio).mp3']
     #--------------------------------------------------------------------------------------
 
     # Load candidate files and get their embeddings
