@@ -5,10 +5,10 @@ in a database of audio files
 
 from utils import random_sample
 import numpy as np
-from musicnn.musicnn.extractor import extractor
+from musicnn.extractor import extractor
 import pathlib
 from sklearn.neighbors import NearestNeighbors
-import librosa
+import soundfile as sf
 
 
 def get_musical_embedding(filename, model='MTT_musicnn', representation='taggram', temporally_averaged=True):
@@ -24,6 +24,7 @@ def get_musical_embedding(filename, model='MTT_musicnn', representation='taggram
         representation = np.mean(representation, axis=0)
 
     return representation
+
 
 def get_embeddings_from_dir(directory, model='MTT_musicnn', representation='taggram', temporally_averaged=True):
     embeddings = []
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     for query_file in query_files:
         query_sample_filename = f"{'/'.join(query_file.split('/')[:-1])}/samples/{query_file.split('/')[-1]}"
         query_sample = random_sample(query_file, 10)
-        librosa.output.write_wav(query_sample_filename, query_sample, 22050)    # save the query sample using librosa
+        sf.write(query_sample_filename, query_sample, 22050)   # save the query sample using librosa
         query_embedding = get_musical_embedding(query_sample_filename, model=model, 
                                                 representation=representation, 
                                                 temporally_averaged=temporally_averaged)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
         query_embedding = query_embedding.reshape(1, -1)
         distances, indices = E.kneighbors(query_embedding)
 
-        # prints results: recommended song for the given qury song
+        # prints results: recommended song for the given query song
         query_song = query_file.split('/')[-1].split('.')[0]
         recommended_song = songs[indices[0][0]].name.split('.')[0]
         print('\n', '---------------------------------------------------------------------------------------------')
