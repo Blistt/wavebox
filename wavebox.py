@@ -10,13 +10,7 @@ import radio_selector
 def wavebox(input_audio):
 
     radio_stations = [88.5,
-                      89.1,
-                      89.3,
                       89.5,
-                      90.3,
-                      90.7,
-                      91.1,
-                      91.7,
                       92.3,
                       93.1,
                       93.5,
@@ -29,9 +23,7 @@ def wavebox(input_audio):
                       99.5,
                       99.9,
                       100.7,
-                      101.1,
                       102.1,
-                      103.1,
                       103.5,
                       104.3,
                       105.1,
@@ -41,4 +33,7 @@ def wavebox(input_audio):
     for station in radio_stations:
         radio_sampler.sample_signal(station)
     
-    
+
+if __name__ == "__main__":
+    audio_file_path = "path/to/audioInput.mp3"
+    wavebox(audio_file_path)
