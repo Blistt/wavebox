@@ -2,6 +2,7 @@ import librosa
 import numpy as np
 import os
 import pathlib
+import soundfile as sf
 
 def random_sample(filename, duration, save=False):
     # Load the audio file
@@ -28,7 +29,8 @@ def random_sample(filename, duration, save=False):
     if save:
         song = filename.split("/")[-1]
         # save the sample as an mp3 file
-        librosa.output.write_wav(f'dev_dataset/samples/{song}', sample, sr=22050)
+        sf.write(f'dev_dataset/samples/{song}', sample, sr=22050)
+        # Write audio to a WAV file using soundfile
 
     return sample
 
