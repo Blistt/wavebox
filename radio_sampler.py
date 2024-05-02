@@ -89,6 +89,8 @@ def sample_signal(Freq, duration_sec=7, sampling_rate=1140000):
 
     # Write audio to a WAV file to hear playback
     output_path = 'samples/'
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
     wavfile.write(f'{output_path}/{Freq / 1e6}.wav',int(Fs_audio), x7.astype("int16"))
 
 # Because this file will be called by another, a main isn't needed. Will be removed soon
